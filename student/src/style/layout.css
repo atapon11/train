@@ -6,3 +6,37 @@
     height: 50px;
     color: white;
 }
+
+.pagination li {
+    height: 40px;
+    width: 40px;
+    margin-left: 1px;
+    margin-right: 1px;
+    text-align: center;
+    padding-top: 10px;
+    font-size: 18px;
+    background-color: #e7e7e7 !important; 
+}
+
+.pagination li a {
+    color: black;
+}
+
+.pagination .disabled {
+    cursor: default;
+    background-color: #e7e7e7 !important; 
+}
+
+.pagination .disabled a {
+    cursor: default;
+}
+
+.pagination .active {
+    cursor: default;
+    background-color: #0d5cf0 !important;
+}
+
+.pagination .active a {
+    cursor: default;
+    background-color: #0d5cf0 !important;
+}
