@@ -5,23 +5,46 @@ import ShowData from "./ShowData";
 import { TextSelect } from "../../../components/TextSelect";
 import Status from "../../../data/status.json";
 import { getTreatmentTypeAll } from "../../../service/TreatmentType.Service";
+import { getDoctor } from "../../../service/Doctor.Service";
 
 const MainDoctor = () => {
-  const [dataTreatment, setDataTreatment] = useState([]);
+    const [dataTreatment, setDataTreatment] = useState([]);
+    const [data, setData] = useState([]);
+    const [pagin, setPagin] = useState({
+      totalRow: 1,
+      pageSize: 10,
+      currentPage: 1,
+      totalPage: 1,
+    });
 
   useEffect(() => {
+    fetchData(10, 1, "", "", "")
     getTreatmentAll();
   }, []);
 
   async function getTreatmentAll() {
-    let res = await getTreatmentTypeAll();
+    let res = await getTreatmentTypeAll()
+    if(res) {
+        if(res.statusCode === 200 && res.taskStatus) {
+            res.data.unshift({ id: '', name: 'ทั้งหมด'}) //unshift ตั้งค่าให้เป็นตัวแรก
+            setDataTreatment(res.data);
+        }
+    }
+}
+
+console.log("data", data);
+
+
+async function fetchData(pageSize, currentPage, search, treatment,  status) {
+    let res = await getDoctor(pageSize, currentPage, search, treatment,  status);
     if (res) {
       if (res.statusCode === 200 && res.taskStatus) {
-        setDataTreatment(res.data);
+        setData(res.data);
+        setPagin(res.pagin);
       }
     }
   }
-  console.log(dataTreatment);
+
   return (
     <Fragment>
       <div className="w-full">
@@ -113,7 +136,7 @@ const MainDoctor = () => {
                   </button>
                 </div>
               </div>
-              <div className="w-full mt-5">{<ShowData />}</div>
+              <div className="w-full mt-5">{<ShowData data={data} pagin={pagin} />}</div>
             </Form>
           )}
         </Formik>

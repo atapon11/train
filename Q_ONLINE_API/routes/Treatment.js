@@ -96,6 +96,7 @@ router.get("/getTreatmentAll", async function (req, res) {
         if (response) {
           if (response.recordset) {
             var query = response.recordset;
+            
             res.status(200).send(respon.multi(query));
           } else {
             res.status(500).send(respon.error());

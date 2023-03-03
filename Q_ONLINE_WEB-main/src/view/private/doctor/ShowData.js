@@ -2,8 +2,11 @@ import React from 'react'
 import { TextSelect } from '../../../components/TextSelect';
 import PageSize from '../../../data/pageSize.json';
 import Pagination from 'react-js-pagination';
+import { useNavigate } from 'react-router-dom';
 
-function ShowData({ data, pagin, setShow, setId, updateStatus, deleteData, changePage, changePageSize }) {
+function ShowData({ data, pagin}) {
+const navigate = useNavigate();
+
     return (
       <div className="w-full">
         <div className="d-flex justify-content-between mb-2">
@@ -25,8 +28,7 @@ function ShowData({ data, pagin, setShow, setId, updateStatus, deleteData, chang
               type="button"
               className="btn btn-success"
               onClick={() => {
-                // setId(0);
-                // setShow(true);
+                navigate('/admin/doctor/form')
               }}
             >
               <i className="fa-solid fa-plus mx-1"></i>
@@ -56,12 +58,15 @@ function ShowData({ data, pagin, setShow, setId, updateStatus, deleteData, chang
               </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>1</td>
-                <td>นพ อรรถพล สงพูน</td>
-                <td>ตรวจภายใน</td>
-                <td>ใช้งานอยู่</td>
+                {data.map((item, index) =>(
+                <tr key={item.id}>
+                <td>{(pagin.currentPage - 1) * pagin.pageSize + (index + 1)}</td>
+                <td>{`${item.name} ${item.lastname}`}</td>
+                <td>{item.treatment_type_name}</td>
+                <td>{item.isused === 1 ? 'ใช้งาน' : 'ไม่ใช้งาน'}</td>
                 <td>
+               
+            
                 <button
                 
                       type="button"
@@ -91,8 +96,10 @@ function ShowData({ data, pagin, setShow, setId, updateStatus, deleteData, chang
                     >
                       <i className="fa-solid fa-trash-can"></i>
                     </button>
+                    
                 </td>
-            </tr>
+            </tr> 
+            ))}
             </tbody>
           </table>
         </div>
