@@ -89,6 +89,31 @@ router.get("/getDetailTreatment/:id", async function (req, res) {
   }
 });
 
+router.get("/getTreatmentAll", async function (req, res) {
+  try {
+  
+    await mssql.sql.query(`SELECT id, treatment_type_name AS name FROM treatment_type`,function (err, response) {
+        if (response) {
+          if (response.recordset) {
+            var query = response.recordset;
+            res.status(200).send(respon.multi(query));
+          } else {
+            res.status(500).send(respon.error());
+          }
+        } else {
+          if (err) {
+            res.status(500).send(respon.error(err.originalError.info.number, err.originalError.info.message));
+          } else {
+            res.status(500).send(respon.error);
+          }
+        }
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 router.post('/createTreatment', async function (req, res){
     try {
         console.log('req body:',req.body);
