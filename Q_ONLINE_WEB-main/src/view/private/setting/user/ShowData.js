@@ -1,13 +1,11 @@
 import React from 'react';
-import { TextSelect } from '../../../components/TextSelect';
-import PageSize from '../../../data/pageSize.json';
+import { TextSelect } from '../../../../components/TextSelect';
+import PageSize from '../../../../data/pageSize.json';
 import Pagination from 'react-js-pagination';
 import { useNavigate } from 'react-router-dom';
-import DateTh from '../../../components/DateTh';
 
-function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePageSize }) {
+function ShowData({ data, pagin, changePage, changePageSize, updateStatus, deleteData }) {
   const navigate = useNavigate();
-
   return (
     <div className="w-full">
       <div className="d-flex justify-content-between mb-2">
@@ -29,7 +27,7 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
             type="button"
             className="btn btn-success"
             onClick={() => {
-              navigate('/admin/open-schedule/form');
+              navigate('/admin/user/form');
             }}
           >
             <i className="fa-solid fa-plus mx-1"></i>
@@ -44,17 +42,17 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
               <th scope="col" style={{ width: '5%' }}>
                 ลำดับ
               </th>
-              <th scope="col" style={{ width: '25%' }}>
-                ชื่อแพทย์
-              </th>
-              <th scope="col" style={{ width: '15%' }}>
-                ประเภทการรักษา
+              <th scope="col" style={{ width: '10%' }}>
+                เลขบัตรประชาชน
               </th>
               <th scope="col" style={{ width: '20%' }}>
-                วันที่เปิดจองคิว
+                ชื่อ-นามสกุล
+              </th>
+              <th scope="col" style={{ width: '30%' }}>
+                ที่อยู่
               </th>
               <th scope="col" style={{ width: '10%' }}>
-                จำนวน
+                เบอร์โทร
               </th>
               <th scope="col" style={{ width: '10%' }}>
                 สถานะการใช้งาน
@@ -75,16 +73,12 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
               data.map((item, index) => (
                 <tr key={item.id}>
                   <td>{(pagin.currentPage - 1) * pagin.pageSize + (index + 1)}</td>
+                  <td>{item.id_card}</td>
                   <td>{item.fullname}</td>
-                  <td>{item.treatment_type_name}</td>
                   <td>
-                    <DateTh date={item.open_date} />
+                    {item.address} ต.{item.subdistrict} อ.{item.district} จ.{item.province} {item.postcode}
                   </td>
-                  <td>
-                    <p className={item.book_amount < item.amount ? 'text-success' : 'text-danger'}>
-                      {item.book_amount}/{item.amount}
-                    </p>
-                  </td>
+                  <td>{item.phone_number}</td>
                   <td>{item.is_used === 1 ? 'ใช้งาน' : 'ไม่ใช้งาน'}</td>
                   <td>
                     {/* ปุ่มแก้ไข */}
@@ -92,7 +86,7 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
                       type="button"
                       className="btn btn-warning text-white mx-1 mt-1"
                       onClick={() => {
-                        navigate('/admin/open-schedule/form', { state: item.id });
+                        navigate('/admin/user/form', { state: item.id });
                       }}
                     >
                       <i className="fa-solid fa-pen-to-square"></i>
@@ -102,7 +96,7 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
                       type="button"
                       className={`btn text-white mx-1 mt-1 ${item.is_used === 1 ? 'btn-danger' : 'btn-success'}`}
                       onClick={() => {
-                        updateStatus(item.id, { status: item.is_used === 1 ? '0' : '1' });
+                        updateStatus(item.id, { status: item.is_used === 1 ? 0 : 1 });
                       }}
                     >
                       {item.is_used === 1 ? <i className="fa-solid fa-lock"></i> : <i className="fa-solid fa-lock-open"></i>}

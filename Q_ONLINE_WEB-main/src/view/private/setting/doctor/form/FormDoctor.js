@@ -1,24 +1,27 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, ErrorMessage } from 'formik';
 import PrefixDoctor from '../../../../../data/prefixDoctor.json';
 import { TextSelect } from '../../../../../components/TextSelect';
 import { getTreatmentTypeAll } from '../../../../../service/TreatmentType.Service';
+import { createDoctor, updateDoctor, getDetailDoctor } from '../../../../../service/Doctor.Service';
+import { DropzoneImage } from '../../../../../components/DropzoneImage';
 import Schema from './Validation';
-import { createDoctor,updateDoctor, getDetailDoctor} from '../../../../../service/Doctor.Service';
+import { baseURL } from '../../../../../helper/Axios';
+import Swal from 'sweetalert2';
 
 function FormDoctor() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [dataTreatment, setDataTreatment] = useState([]);
   const [detail, setDetail] = useState(null);
 
   useEffect(() => {
     getTreatmentAll();
-    if(location.state){
-      getDetail(location.state)
+    if (location.state) {
+      getDetail(location.state);
     }
   }, [location.state]);
-
 
   async function getDetail(id) {
     let res = await getDetailDoctor(id);
@@ -37,24 +40,41 @@ function FormDoctor() {
       }
     }
   }
-  async function save(data){
-    let res = await createDoctor(data)
-    if(res)
-    if(res.statusCode === 200 && res.taskStatus){
-      alert('Success');
+
+  async function save(data) {
+    let formData = new FormData();
+    formData.append('image', data.image[0]);
+    formData.append('prefixId', data.prefixId);
+    formData.append('name', data.name);
+    formData.append('lastname', data.lastname);
+    formData.append('treatment', data.treatment);
+
+    let res = location.state ? await updateDoctor(location.state, formData) : await createDoctor(formData);
+    if (res) {
+      if (res.statusCode === 200 && res.taskStatus) {
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกข้อมูลสำเร็จ',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        navigate('/admin/doctor');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'บันทึกข้อมูลไม่สำเร็จ !!',
+          showConfirmButton: true,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด !!',
+        text: 'Server Error',
+        showConfirmButton: true,
+      });
     }
   }
-
-  async function save(data){
-    let res = location.state ? await updateDoctor(location.state,data):await createDoctor(data);
-    if(res)
-    if(res.statusCode === 200 && res.taskStatus){
-      alert(location.state ? 'Update Success' : 'Create Success');
-    }
-  }
-
-
-  // console.log('location', location);
 
   return (
     <Fragment>
@@ -80,10 +100,11 @@ function FormDoctor() {
           enableReinitialize={true}
           validationSchema={Schema}
           initialValues={{
-            prefixId: detail ? detail.prefix_id:'',
-            name: detail ? detail.name:'',
-            lastname: detail ? detail.lastname:'',
-            treatment: detail ? detail.treatment_type_id:'',
+            image: detail ? (detail.path_image ? [`${baseURL}${detail.path_image}`] : []) : [],
+            prefixId: detail ? detail.prefix_id : '',
+            name: detail ? detail.name : '',
+            lastname: detail ? detail.lastname : '',
+            treatment: detail ? detail.treatment_type_id : '',
           }}
           onSubmit={(value) => {
             console.log('submit :', value);
@@ -94,7 +115,22 @@ function FormDoctor() {
             <Form>
               <div className="row d-flex justify-content-center">
                 <div className="col-12 col-md-8 col-lg-6">
-                  <div className="row">
+                  <div className="row d-flex justify-content-center">
+                    <div className="col-12 col-sm-8 col-lg-7 col-xl-5 px-1 mt-2">
+                      <DropzoneImage
+                        title="อัพโหลดรูป"
+                        errors={errors.image}
+                        touched={touched.image}
+                        name="image"
+                        value={values.image}
+                        onChange={(e) => {
+                          e.preventDefault();
+                          let addimg = [];
+                          addimg.push(...e.target.files);
+                          setFieldValue('image', addimg);
+                        }}
+                      />
+                    </div>
                     <div className="col-12 px-1 mt-2">
                       <label>คำนำหน้า</label>
                       <TextSelect

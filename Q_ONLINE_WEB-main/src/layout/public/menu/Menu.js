@@ -14,14 +14,14 @@ export const Menu = [
     title: 'ตรวจสอบคิว',
     pathname: '/check-book-an-appointment',
   },
-  {
-    id: 4,
-    title: 'ลงทะเบียน',
-    pathname: '/register',
-  },
-  {
-    id: 5,
-    title: 'เข้าสู่ระบบ',
-    pathname: '/login',
-  },
+  // {
+  //   id: 4,
+  //   title: 'ลงทะเบียน',
+  //   pathname: '/register',
+  // },
+  // {
+  //   id: 5,
+  //   title: 'เข้าสู่ระบบ',
+  //   pathname: '/login',
+  // },
 ];

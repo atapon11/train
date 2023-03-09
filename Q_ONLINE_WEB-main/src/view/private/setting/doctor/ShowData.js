@@ -87,8 +87,7 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
                       type="button"
                       className={`btn text-white mx-1 mt-1 ${item.is_used === 1 ? 'btn-danger' : 'btn-success'}`}
                       onClick={() => {
-                        updateStatus(item.id, {status: item.is_used === 1 ? "0" : "1"})
-                        console.log(item.id);
+                        updateStatus(item.id, { status: item.is_used === 1 ? '0' : '1' });
                       }}
                     >
                       {item.is_used === 1 ? <i className="fa-solid fa-lock"></i> : <i className="fa-solid fa-lock-open"></i>}
@@ -98,8 +97,7 @@ function ShowData({ data, pagin, updateStatus, deleteData, changePage, changePag
                       type="button"
                       className="btn btn-danger text-white mx-1 mt-1"
                       onClick={() => {
-                        deleteData(item.id)
-                        console.log(item.id);
+                        deleteData(item.id);
                       }}
                     >
                       <i className="fa-solid fa-trash-can"></i>

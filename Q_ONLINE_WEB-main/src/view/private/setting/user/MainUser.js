@@ -1,15 +1,13 @@
 import React, { Fragment, useState, useEffect } from 'react';
+// import { Link } from 'react-router-dom';
 import { Formik, Form } from 'formik';
-import { getTreatmentType, updateStstusTreatmentType, deleteTreatmentType } from '../../../../service/TreatmentType.Service';
-import ShowData from './ShowData';
-import ModalForm from './form/ModalForm';
-import Swal from 'sweetalert2';
 import { TextSelect } from '../../../../components/TextSelect';
+import { getUsers, updateStatusUser, deleteUser } from '../../../../service/User.Service';
 import Status from '../../../../data/status.json';
+import Swal from 'sweetalert2';
+import ShowData from './ShowData';
 
-function MainTreatmentType() {
-  const [show, setShow] = useState(false);
-  const [id, setId] = useState(0);
+function MainUser() {
   const [data, setData] = useState([]);
   const [pagin, setPagin] = useState({
     totalRow: 1,
@@ -24,7 +22,7 @@ function MainTreatmentType() {
 
   // ฟังก์ชันดึงข้อมูลแบบแบ่งหน้า
   async function fetchData(pageSize, currentPage, search, status) {
-    let res = await getTreatmentType(pageSize, currentPage, search, status);
+    let res = await getUsers(pageSize, currentPage, search, status);
     if (res) {
       if (res.statusCode === 200 && res.taskStatus) {
         setData(res.data);
@@ -46,7 +44,7 @@ function MainTreatmentType() {
       cancelButtonText: 'ยกเลิก',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        let res = await updateStstusTreatmentType(id, data);
+        let res = await updateStatusUser(id, data);
         if (res) {
           if (res.statusCode === 200 && res.taskStatus) {
             Swal.fire({
@@ -82,7 +80,7 @@ function MainTreatmentType() {
       cancelButtonText: 'ยกเลิก',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        let res = await deleteTreatmentType(id);
+        let res = await deleteUser(id);
         if (res) {
           if (res.statusCode === 200 && res.taskStatus) {
             Swal.fire({
@@ -113,17 +111,17 @@ function MainTreatmentType() {
             <ol className="breadcrumb">
               {/* <li className="breadcrumb-item">
                 <Link to="#" className="nav-breadcrumb">
-                  Library
+                  ข้อมูลแพทย์
                 </Link>
               </li> */}
               <li className="breadcrumb-item text-black fw-semibold" aria-current="page">
-                ข้อมูลประเภทการรักษา
+                ข้อมูลรายชื่อผู้ป่วย
               </li>
             </ol>
           </nav>
         </div>
         <div className="w-full mb-5">
-          <h2 className="title-content">ข้อมูลประเภทการรักษา</h2>
+          <h2 className="title-content">ข้อมูลรายชื่อผู้ป่วย</h2>
         </div>
         <Formik
           enableReinitialize={true}
@@ -151,11 +149,12 @@ function MainTreatmentType() {
                     }}
                   />
                 </div>
+
                 <div className="col-12 col-md-6 col-lg-4">
                   <label>สถานะการใช้งาน</label>
                   <TextSelect
-                    id="pagesize"
-                    name="pagesize"
+                    id="status"
+                    name="status"
                     options={Status}
                     value={Status.filter((a) => a.value === values.status)}
                     onChange={(item) => {
@@ -186,10 +185,8 @@ function MainTreatmentType() {
                 <ShowData
                   data={data}
                   pagin={pagin}
-                  setShow={setShow}
-                  setId={setId}
-                  updateStatus={updateStatus}
                   deleteData={deleteData}
+                  updateStatus={updateStatus}
                   changePage={(page) => {
                     fetchData(pagin.pageSize, page, values.search, values.status);
                   }}
@@ -202,19 +199,8 @@ function MainTreatmentType() {
           )}
         </Formik>
       </div>
-      {/*-- Modal form insert and update --*/}
-      <ModalForm
-        id={id}
-        show={show}
-        setShow={setShow}
-        reload={() => {
-          setId(0);
-          setShow(false);
-          fetchData(10, 1, '', '');
-        }}
-      />
     </Fragment>
   );
 }
 
-export default MainTreatmentType;
+export default MainUser;

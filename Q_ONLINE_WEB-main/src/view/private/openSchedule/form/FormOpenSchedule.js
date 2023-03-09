@@ -1,22 +1,40 @@
-import React, { Fragment, useEffect, useState } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { Formik, Form, ErrorMessage } from "formik";
-import { TextSelect } from "../../../../components/TextSelect";
-import Schema from "./Validation";
-import { getTreatmentTypeAll } from "../../../../service/TreatmentType.Service";
-import { getDoctorBy } from "../../../../service/Doctor.Service";
+import React, { Fragment, useEffect, useState } from 'react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { Formik, Form, ErrorMessage } from 'formik';
+import { TextSelect } from '../../../../components/TextSelect';
+import { getTreatmentTypeAll } from '../../../../service/TreatmentType.Service';
+import { getDoctorBy } from '../../../../service/Doctor.Service';
+import { createOpenSchedule, getDetailOpenSchedule, updateOpenSchedule } from '../../../../service/OpenSchedule.Service';
+import Schema from './Validation';
+import Swal from 'sweetalert2';
 
-function FormOpenSchedule() {
+function FormOpenScheduld() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [dataTreatment, setDataTreatment] = useState([]);
-  const [detail, setDetail] = useState(null);
   const [dataDoctor, setDataDoctor] = useState([]);
+  const [detail, setDetail] = useState(null);
 
   useEffect(() => {
-    getTreatment();
-  }, []);
+    getTreatmentAll();
+    if (location.state && !detail) {
+      getDetail(location.state);
+    }
+    if (detail) {
+      getDoctor(detail.treatment_type_id ? detail.treatment_type_id : 0);
+    }
+  }, [detail, location.state]);
 
-  async function getTreatment() {
+  async function getDetail(id) {
+    let res = await getDetailOpenSchedule(id);
+    if (res) {
+      if (res.statusCode === 200 && res.taskStatus) {
+        setDetail(res.data);
+      }
+    }
+  }
+
+  async function getTreatmentAll() {
     let res = await getTreatmentTypeAll();
     if (res) {
       if (res.statusCode === 200 && res.taskStatus) {
@@ -25,7 +43,7 @@ function FormOpenSchedule() {
     }
   }
 
-async function getDoctor(id){
+  async function getDoctor(id) {
     let res = await getDoctorBy(id);
     if (res) {
       if (res.statusCode === 200 && res.taskStatus) {
@@ -34,7 +52,20 @@ async function getDoctor(id){
     }
   }
 
-  console.log(dataDoctor);
+  async function save(data) {
+    let res = location.state ? await updateOpenSchedule(location.state, data) : await createOpenSchedule(data);
+    if (res) {
+      if (res.statusCode === 200 && res.taskStatus) {
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกข้อมูลสำเร็จ',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        navigate('/admin/open-schedule');
+      }
+    }
+  }
 
   return (
     <Fragment>
@@ -43,38 +74,31 @@ async function getDoctor(id){
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <Link to="/admin/doctor" className="nav-breadcrumb">
-                  ข้อมูลรายชื่อแพทย์
+                <Link to="/admin/open-schedule" className="nav-breadcrumb">
+                  ข้อมูลการเปิดจองคิว
                 </Link>
               </li>
-              <li
-                className="breadcrumb-item text-black fw-semibold"
-                aria-current="page"
-              >
-                {location.state ? "แก้ไข" : "เพิ่ม"}ข้อมูลรายชื่อแพทย์
+              <li className="breadcrumb-item text-black fw-semibold" aria-current="page">
+                {location.state ? 'แก้ไข' : 'เพิ่ม'}ข้อมูลการเปิดจองคิว
               </li>
             </ol>
           </nav>
         </div>
         <div className="w-full mb-5">
-          <h2 className="title-content">
-            {location.state ? "แก้ไข" : "เพิ่ม"}ข้อมูลรายชื่อแพทย์
-          </h2>
+          <h2 className="title-content">{location.state ? 'แก้ไข' : 'เพิ่ม'}ข้อมูลการเปิดจองคิว</h2>
         </div>
         <Formik
           enableReinitialize={true}
           validationSchema={Schema}
-          initialValues={
-            {
-              // prefixId: detail ? detail.prefix_id:'',
-              // name: detail ? detail.name:'',
-              // lastname: detail ? detail.lastname:'',
-              // treatment: detail ? detail.treatment_type_id:'',
-            }
-          }
+          initialValues={{
+            treatment: detail ? detail.treatment_type_id : '',
+            doctor: detail ? detail.doctor_id : '',
+            openDate: detail ? (detail.open_date ? detail.open_date.split('T')[0] : '') : '',
+            amount: detail ? (detail.amount ? parseInt(detail.amount) : '') : '',
+          }}
           onSubmit={(value) => {
-            // console.log('submit :', value);
-            // save(value);
+            console.log('submit :', value);
+            save(value);
           }}
         >
           {({ values, errors, touched, setFieldValue }) => (
@@ -90,8 +114,9 @@ async function getDoctor(id){
                         options={dataTreatment}
                         value={dataTreatment.filter((a) => a.id === values.treatment)}
                         onChange={(item) => {
-                            getDoctor(item.id);
-                          setFieldValue("treatment", item.id);
+                          getDoctor(item.id);
+                          setFieldValue('doctor', '');
+                          setFieldValue('treatment', item.id);
                         }}
                         getOptionLabel={(z) => z.name}
                         getOptionValue={(x) => x.id}
@@ -99,79 +124,57 @@ async function getDoctor(id){
                     </div>
                     <div className="col-12 px-1 mt-2">
                       <label>ชื่อแพทย์</label>
-                      <input
-                        name="name"
-                        type="text"
-                        value={values.name}
-                        className={`form-input ${
-                          touched.name
-                            ? errors.name
-                              ? "invalid"
-                              : "valid"
-                            : ""
-                        }`}
-                        onChange={(e) => {
-                          setFieldValue("name", e.target.value);
+                      <TextSelect
+                        id="doctor"
+                        name="doctor"
+                        options={dataDoctor}
+                        value={dataDoctor.filter((a) => a.id === values.doctor)}
+                        onChange={(item) => {
+                          setFieldValue('doctor', item.id);
                         }}
-                      />
-                      <ErrorMessage
-                        component="div"
-                        name="name"
-                        className="text-invalid"
+                        getOptionLabel={(z) => z.fullname}
+                        getOptionValue={(x) => x.id}
                       />
                     </div>
                     <div className="col-12 px-1 mt-2">
-                      <label>วันที่</label>
+                      <label>วันที่เปิดจองคิว</label>
                       <input
-                        name="name"
+                        name="openDate"
                         type="date"
-                        value={values.date}
-                        className={`form-input ${
-                          touched.lastname
-                            ? errors.lastname
-                              ? "invalid"
-                              : "valid"
-                            : ""
-                        }`}
+                        min={new Date().toISOString().split('T')[0]}
+                        value={values.openDate}
+                        className={`form-input ${touched.openDate ? (errors.openDate ? 'invalid' : 'valid') : ''}`}
                         onChange={(e) => {
-                          setFieldValue("lastname", e.target.value);
+                          setFieldValue('openDate', e.target.value);
                         }}
                       />
-                      <ErrorMessage
-                        component="div"
-                        name="lastname"
-                        className="text-invalid"
-                      />
+                      <ErrorMessage component="div" name="openDate" className="text-invalid" />
                     </div>
                     <div className="col-12 px-1 mt-2">
-                      <label>จำนวนที่เปิดรับคิว</label>
+                      <label>จำนวน</label>
                       <input
-                        name="name"
-                        type="text"
-                        value={values.date}
-                        className={`form-input ${
-                          touched.lastname
-                            ? errors.lastname
-                              ? "invalid"
-                              : "valid"
-                            : ""
-                        }`}
+                        name="amount"
+                        type="number"
+                        value={values.amount}
+                        className={`form-input ${touched.amount ? (errors.amount ? 'invalid' : 'valid') : ''}`}
                         onChange={(e) => {
-                          setFieldValue("lastname", e.target.value);
+                          setFieldValue('amount', e.target.value);
                         }}
                       />
-                      <ErrorMessage
-                        component="div"
-                        name="lastname"
-                        className="text-invalid"
-                      />
+                      <ErrorMessage component="div" name="amount" className="text-invalid" />
                     </div>
                   </div>
                   <div className="d-flex justify-content-center mt-3">
                     <button type="submit" className="btn btn-success mx-1">
                       บันทึก
                     </button>
-                    <button type="reset" className="btn btn-secondary mx-1">
+                    <button
+                      type="reset"
+                      className="btn btn-secondary mx-1"
+                      onClick={() => {
+                        getDoctor(0);
+                      }}
+                    >
                       ล้างค่า
                     </button>
                   </div>
@@ -185,4 +188,4 @@ async function getDoctor(id){
   );
 }
 
-export default FormOpenSchedule;
+export default FormOpenScheduld;
