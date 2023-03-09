@@ -5,8 +5,6 @@ export const Menu = [
     icon: 'fa-solid fa-q',
     pathname: '/admin/book-an-appointment',
     type: 1,
-    role: 1, // เห็นได้แค่ role 1
-    
   },
   {
     id: 2,
@@ -14,7 +12,6 @@ export const Menu = [
     icon: 'fa-solid fa-calendar-days',
     pathname: '/admin/open_schedule',
     type: 1,
-    role: [1,2],  // เห็นได้ทั้ง 2 role
   },
   {
     id: 3,

@@ -21,10 +21,10 @@ export async function getDetalTreatmentType(id) {
 }
 
 // ดึงข้อมูลประเภทการรักษาทั้งหมด
-export async function getTreatmentTypeAll(){
+export async function getTreatmentTypeAll() {
   try {
-    const response = await Instance.get('treatment/getTreatmentAll')
-    return await response.data; 
+    const response = await Instance.get('treatment/getTreatmentAll');
+    return await response.data;
   } catch (error) {
     console.log('error', error);
   }
@@ -51,7 +51,7 @@ export async function updateTreatmentType(id, data) {
 }
 
 // อัพเดทสถานะข้อมูล
-export async function updateStstusTreatmentType(id, data) {
+export async function updateStatusTreatmentType(id, data) {
   try {
     const response = await Instance.put(`treatment/updateStatusTreatment/${id}`, data);
     return await response.data;
